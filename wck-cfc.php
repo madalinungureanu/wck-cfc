@@ -25,8 +25,8 @@ function wck_cfc_remove_wck_submanu_page(){
 
 /* Add Scripts */
 add_action('admin_enqueue_scripts', 'wck_cfc_print_scripts' );
-function wck_cfc_print_scripts($hook){		
-	if( 'wck_page_cfc-page' == $hook ){			
+function wck_cfc_print_scripts($hook){	
+	if( 'wck-meta-box' == $_GET['post_type'] ){			
 		wp_register_style('wck-cfc-css', plugins_url('/css/wck-cfc.css', __FILE__));
 		wp_enqueue_style('wck-cfc-css');	
 	}	
@@ -113,6 +113,30 @@ function wck_cfc_create_box(){
 		'meta_name' => 'wck_cfc_args',
 		'meta_array' => $cfc_box_args_fields,			
 		'sortable' => false
+	);
+
+	/* create the box */
+	new WCK_CFC_Wordpress_Creation_Kit( $args );
+	
+	
+	/* set up the fields array */
+	$cfc_box_fields_fields = array( 
+		array( 'type' => 'text', 'title' => 'Field Title', 'description' => 'Title of the field', 'required' => true ),
+		array( 'type' => 'select', 'title' => 'Field Type', 'options' => array( 'text', 'textarea', 'select', 'checkbox', 'radio', 'upload' ), 'default-option' => true, 'description' => 'The field type', 'required' => true ),
+		array( 'type' => 'textarea', 'title' => 'Description', 'description' => 'The description of the field.' ),				
+		array( 'type' => 'select', 'title' => 'Required', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the field is required or not' ),
+		array( 'type' => 'text', 'title' => 'Default Value', 'description' => 'Default value of the field. For Checkboxes if there are multiple values separete them with a ","' ),
+		array( 'type' => 'text', 'title' => 'Options', 'description' => 'Options for field types "select", "checkbox" and "radio". For multiple options separete them with a ","' )
+	);	
+	
+	
+	/* set up the box arguments */
+	$args = array(
+		'metabox_id' => 'wck-cfc-fields',
+		'metabox_title' => 'Meta Box Fields',
+		'post_type' => 'wck-meta-box',
+		'meta_name' => 'wck_cfc_fields',
+		'meta_array' => $cfc_box_fields_fields
 	);
 
 	/* create the box */
