@@ -25,10 +25,14 @@ function wck_cfc_remove_wck_submanu_page(){
 
 /* Add Scripts */
 add_action('admin_enqueue_scripts', 'wck_cfc_print_scripts' );
-function wck_cfc_print_scripts($hook){	
-	if( 'wck-meta-box' == $_GET['post_type'] ){			
+function wck_cfc_print_scripts($hook){
+	$post_type = $_GET['post_type'] ? $_GET['post_type'] : get_post_type( $_GET['post'] );
+	if( 'wck-meta-box' == $post_type ){			
 		wp_register_style('wck-cfc-css', plugins_url('/css/wck-cfc.css', __FILE__));
-		wp_enqueue_style('wck-cfc-css');	
+		wp_enqueue_style('wck-cfc-css');
+
+		wp_register_script('wck-cfc-js', plugins_url('/js/wck-cfc.js', __FILE__), array( 'jquery' ), '1.0' );
+		wp_enqueue_script('wck-cfc-js');
 	}	
 }
 
@@ -205,11 +209,24 @@ function wck_cfc_update_form_wrapper_end( $form, $i ){
 }
 
 
-/* advanced label options container for display */
-//add_filter( "wck_before_listed_wck_cfc_element_7", 'wck_cfc_display_label_wrapper_start', 10, 2 );
-function wck_cfc_display_label_wrapper_start( $form, $i ){
-	$form .=  '<li><a href="javascript:void(0)" onclick="jQuery(\'#cptc-advanced-label-options-display-container-'.$i.'\').toggle(); if( jQuery(this).text() == \'Show Advanced Labels\' ) jQuery(this).text(\'Hide Advanced Labels\');  else if( jQuery(this).text() == \'Hide Advanced Labels\' ) jQuery(this).text(\'Show Advanced Labels\');">Show Advanced Labels</a></li>';
-	$form .= '<li id="cptc-advanced-label-options-display-container-'.$i.'" style="display:none;"><ul>';
+/* display or show options based on the field type */
+add_filter( "wck_before_listed_wck_cfc_fields_element_1", 'wck_cfc_display_label_wrapper_start', 10, 3 );
+function wck_cfc_display_label_wrapper_start( $form, $i, $value ){
+	$GLOBALS['wck_cfc_field_type'] = $value;
+	return $form;
+}
+
+add_filter( "wck_before_listed_wck_cfc_fields_element_5", 'wck_cfc_display_label_wrapper_options_start', 10, 3 );
+function wck_cfc_display_label_wrapper_options_start( $form, $i, $value ){
+	if( !in_array( $GLOBALS['wck_cfc_field_type'], array( 'select', 'checkbox', 'radio' ) ) )
+		$form .= '<div style="display:none;">';
+	return $form;
+}
+
+add_filter( "wck_after_listed_wck_cfc_fields_element_5", 'wck_cfc_display_label_wrapper_options_end', 10, 3 );
+function wck_cfc_display_label_wrapper_options_end( $form, $i, $value ){
+	if( !in_array( $GLOBALS['wck_cfc_field_type'], array( 'select', 'checkbox', 'radio' ) ) )
+		$form .= '</div>';
 	return $form;
 }
 

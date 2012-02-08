@@ -413,12 +413,12 @@ class WCK_CFC_Wordpress_Creation_Kit{
 				
 				foreach($result as $key => $value){
 					
-					$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $i );				
+					$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $i, $value );				
 					
 					$details = $fields[$j];
 					$list .= '<li><strong>'.$details['title'].': </strong>'.$value.' </li>';							
 					
-					$list = apply_filters( "wck_after_listed_{$meta}_element_{$j}", $list, $i );
+					$list = apply_filters( "wck_after_listed_{$meta}_element_{$j}", $list, $i, $value );
 					
 					$j++;					
 				}
