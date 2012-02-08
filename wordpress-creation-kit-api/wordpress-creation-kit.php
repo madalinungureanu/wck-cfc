@@ -343,7 +343,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 			foreach($results[$element_id] as $key => $value){				
 				$details = $fields[$i];
 				
-				$form = apply_filters( "wck_before_update_form_{$meta}_element_{$i}", $form, $element_id );
+				$form = apply_filters( "wck_before_update_form_{$meta}_element_{$i}", $form, $element_id, $value );
 				
 				$form .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'">';
 				
@@ -351,7 +351,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 				
 				$form .= '</li>';
 				
-				$form = apply_filters( "wck_after_update_form_{$meta}_element_{$i}", $form, $element_id );
+				$form = apply_filters( "wck_after_update_form_{$meta}_element_{$i}", $form, $element_id, $value );
 				
 				$i++;
 			}
