@@ -399,40 +399,34 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		
 		if($results != null){
-			$list .= '<thead><tr><th>#</th><th>Content</th><th>Edit</th><th>Delete</th></tr></thead>';
+			$list .= '<thead><tr><th class="wck-number">#</th><th>Content</th><th class="wck-edit">Edit</th><th class="wck-delete">Delete</th></tr></thead>';
 			$i=0;
 			foreach ($results as $result){			
 				
 				$entry_nr = $i+1;
 				
 				$list .= '<tr id="element_'.$i.'">'; 
-				$list .= '<td style="text-align:center;vertical-align:middle;">'. $entry_nr .'</td>'; 
+				$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-number">'. $entry_nr .'</td>'; 
 				$list .= '<td><ul>';
 				
 				$j = 0;				
 				
-				foreach($result as $key => $value){
+				foreach( $fields as $field ){
+					$details = $field;
+					$value = '<pre>'.htmlspecialchars( $results[$i][sanitize_title_with_dashes( remove_accents( $details['title'] ) )] ) . '</pre>';
 					
-					$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $i, $value );				
+					$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $i, $value );		
 					
-					$details = $fields[$j];
-					$list .= '<li><strong>'.$details['title'].': </strong>'.$value.' </li>';							
+					$list .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'"><strong>'.$details['title'].': </strong>'.$value.' </li>';							
 					
 					$list = apply_filters( "wck_after_listed_{$meta}_element_{$j}", $list, $i, $value );
 					
 					$j++;					
 				}
 				$list .= '</ul></td>';				
-				$list .= '<td style="text-align:center;vertical-align:middle;"><a href="javascript:void(0)"  onclick=\'showUpdateFormMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($i).'", "'.esc_js($edit_nonce).'")\' title="Edit this item">Edit</a></td>';
-				$list .= '<td style="text-align:center;vertical-align:middle;"><a href="javascript:void(0)" class="mbdelete" onclick=\'removeMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($i).'", "'.esc_js($delete_nonce).'")\' title="Delete this item">Delete</a></td>';
-				/*if($i != 0 && count($results) > 1){
-					$j= $i-1;
-					$list .= '<td><a href="javascript:void(0)" class="button moveup" onclick=\'swapMetaMb("'.$meta.'", "'.$id.'", "'.$i.'", "'. $j .'")\'><span>&nbsp;</span></a></td>';
-				}
-				if($i != count($results)-1){
-					$j= $i+1;
-					$list .= '<td><a href="javascript:void(0)" class="button movedown" onclick=\'swapMetaMb("'.$meta.'", "'.$id.'", "'.$i.'", "'. $j .'")\'><span>&nbsp;</span></a></td>';
-				}*/
+				$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-edit"><a href="javascript:void(0)"  onclick=\'showUpdateFormMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($i).'", "'.esc_js($edit_nonce).'")\' title="Edit this item">Edit</a></td>';
+				$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-delete"><a href="javascript:void(0)" class="mbdelete" onclick=\'removeMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($i).'", "'.esc_js($delete_nonce).'")\' title="Delete this item">Delete</a></td>';
+				
 				$list .= '</tr>';
 				$i++;
 			}
@@ -511,6 +505,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		$results[] = $values;
 		
+		do_action( 'wck_before_add_meta', $meta, $id, $values );
+		
 		if( $this->args['context'] == 'post_meta' )
 			update_post_meta($id, $meta, $results);
 		else if ( $this->args['context'] == 'option' )
@@ -548,7 +544,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		$results[$element_id] = $values;
 		
-		
+		do_action( 'wck_before_update_meta', $meta, $id, $values, $element_id );
 		
 		if( $this->args['context'] == 'post_meta' )
 			update_post_meta($id, $meta, $results);
@@ -616,6 +612,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		unset($results[$element_id]);
 		/* reset the keys for the array */
 		$results = array_values($results);
+		
+		do_action( 'wck_before_remove_meta', $meta, $id, $element_id );
 		
 		if( $this->args['context'] == 'post_meta' )
 			update_post_meta($id, $meta, $results);

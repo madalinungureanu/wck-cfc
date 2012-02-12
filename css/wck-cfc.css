@@ -1,3 +1,15 @@
 #wck_cfc_fields .row-options{
 	display:none;
 }
+
+#edit-slug-box{
+	display:none;
+}
+
+#minor-publishing-actions{
+	display:none;
+}
+
+#visibility.misc-pub-section {
+	display:none;
+}

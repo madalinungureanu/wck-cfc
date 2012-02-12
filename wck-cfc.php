@@ -84,7 +84,7 @@ function wck_cfc_create_box(){
 	$post_types = get_post_types($args,$output);
 	$post_type_names = array(); 
 	foreach ($post_types  as $post_type ) {
-		if ( $post_type->name != 'attachment' || $post_type->name != 'wck-meta-box' ) 
+		if ( $post_type->name != 'attachment' && $post_type->name != 'wck-meta-box' ) 
 			$post_type_names[] = $post_type->name;
 	}
 	
@@ -103,6 +103,7 @@ function wck_cfc_create_box(){
 		array( 'type' => 'text', 'title' => 'Meta name', 'description' => 'the name of the meta field. only lowercase letters', 'required' => true ),		
 		array( 'type' => 'select', 'title' => 'Post Type', 'options' => $post_type_names, 'default-option' => true, 'description' => 'What post type the meta box should be attached to', 'required' => true ),
 		array( 'type' => 'select', 'title' => 'Sortable', 'options' => array( 'true', 'false' ), 'default' => 'true', 'description' => 'Whether the metabox is sortable or not' ),
+		array( 'type' => 'select', 'title' => 'Single', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the box supposrts just one entry or if it is a repeater field. By default it is a repeater field.' ),
 		array( 'type' => 'text', 'title' => 'Post ID', 'description' => 'ID of a post on which the meta box should appear.' )			
 	);
 	
@@ -203,6 +204,67 @@ function wck_cfc_display_label_wrapper_options_end( $form, $i, $value ){
 add_action("wck_refresh_list_wck_cfc", "wck_cfc_after_refresh_list");
 function wck_cfc_after_refresh_list(){
 	echo '<script type="text/javascript">window.location="'. get_admin_url() . 'admin.php?page=cfc-page&updated=true' .'";</script>';
+}
+
+/* hook to create custom post types */
+add_action( 'init', 'wck_cfc_create_boxes' );
+
+function wck_cfc_create_boxes(){
+	$args = array(
+		'post_type' => 'wck-meta-box',
+		'numberposts' => -1
+	);
+	
+	$all_meta_boxes = get_posts( $args );
+	
+	foreach( $all_meta_boxes as $meta_box ){
+		$wck_cfc_args = get_post_meta( $meta_box->ID, 'wck_cfc_args', true );
+		$wck_cfc_fields = get_post_meta( $meta_box->ID, 'wck_cfc_fields', true );
+		
+		
+		$fields_array = array();
+		if( !empty( $wck_cfc_fields ) ){
+			foreach( $wck_cfc_fields as $wck_cfc_field ){
+				$fields_inner_array = array( 'type' => $wck_cfc_field['field-type'], 'title' => $wck_cfc_field['field-title'] ); 
+				if( !empty( $wck_cfc_field['description'] ) )
+					$fields_inner_array['description'] = $wck_cfc_field['description']; 
+				if( !empty( $wck_cfc_field['required'] ) )
+					$fields_inner_array['required'] = $wck_cfc_field['required'] == 'false' ? false : true;
+				if( !empty( $wck_cfc_field['default-value'] ) )
+					$fields_inner_array['default'] = $wck_cfc_field['default-value'];
+				if( !empty( $wck_cfc_field['options'] ) )
+					$fields_inner_array['options'] = explode( ',', $wck_cfc_field['options'] );
+					
+				$fields_array[] = $fields_inner_array;
+			}
+		}
+		
+		if( !empty( $wck_cfc_args ) ){
+			foreach( $wck_cfc_args as $wck_cfc_arg ){
+				$box_args = array(
+								'metabox_id' => sanitize_title_with_dashes( remove_accents ( $wck_cfc_arg['meta-box-title'] ) ),
+								'metabox_title' => $wck_cfc_arg['meta-box-title'],
+								'post_type' => $wck_cfc_arg['post-type'],
+								'meta_name' => $wck_cfc_arg['meta-name'],
+								'meta_array' => $fields_array
+							);
+				if( !empty( $wck_cfc_arg['sortable'] ) )
+					$box_args['sortable'] = $wck_cfc_arg['sortable'] == 'false' ? false : true;
+				
+				if( !empty( $wck_cfc_arg['single'] ) )					
+					$box_args['single'] = $wck_cfc_arg['single'] == 'false' ? false : true;
+				
+				if( !empty( $wck_cfc_arg['post-id'] ) )
+					$box_args['post_id'] = $wck_cfc_arg['post-id'];
+					
+				if( !empty( $wck_cfc_arg['page-template'] ) )
+					$box_args['page_template'] = $wck_cfc_arg['page-template'];	
+
+				/* create the box */
+				new WCK_CFC_Wordpress_Creation_Kit( $box_args );
+			}
+		}
+	}
 }
 
 /* Add side metaboxes */

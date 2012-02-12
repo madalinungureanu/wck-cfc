@@ -38,6 +38,16 @@
 	background:url(images/ajax-loader.gif) center center no-repeat;	z-index:999;
 }
 
+.mb-table-container pre{
+	display:inline-block;
+	vertical-align:top;
+	margin:0;
+}
+
+.wck-edit, .wck-delete, .wck-number{
+	width:50px;
+}
+
 .mbdelete{
 	color:#BC0B0B;
 }
