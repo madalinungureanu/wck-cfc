@@ -413,11 +413,12 @@ class WCK_CFC_Wordpress_Creation_Kit{
 				
 				foreach( $fields as $field ){
 					$details = $field;
-					$value = '<pre>'.htmlspecialchars( $results[$i][sanitize_title_with_dashes( remove_accents( $details['title'] ) )] ) . '</pre>';
+					$value = $results[$i][sanitize_title_with_dashes( remove_accents( $details['title'] ) )];
+					$display_value = '<pre>'.htmlspecialchars( $results[$i][sanitize_title_with_dashes( remove_accents( $details['title'] ) )] ) . '</pre>';
 					
 					$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $i, $value );		
 					
-					$list .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'"><strong>'.$details['title'].': </strong>'.$value.' </li>';							
+					$list .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'"><strong>'.$details['title'].': </strong>'.$display_value.' </li>';							
 					
 					$list = apply_filters( "wck_after_listed_{$meta}_element_{$j}", $list, $i, $value );
 					

@@ -100,7 +100,7 @@ function wck_cfc_create_box(){
 	/* set up the fields array */
 	$cfc_box_args_fields = array( 
 		array( 'type' => 'text', 'title' => 'Meta Box Title', 'description' => 'Title of the meta box', 'required' => true ), 
-		array( 'type' => 'text', 'title' => 'Meta name', 'description' => 'the name of the meta field. only lowercase letters', 'required' => true ),		
+		array( 'type' => 'text', 'title' => 'Meta name', 'description' => 'The name of the meta field. It is the name by which you will query the data in the frontend. Must be unique and only lowercase letters', 'required' => true ),		
 		array( 'type' => 'select', 'title' => 'Post Type', 'options' => $post_type_names, 'default-option' => true, 'description' => 'What post type the meta box should be attached to', 'required' => true ),
 		array( 'type' => 'select', 'title' => 'Sortable', 'options' => array( 'true', 'false' ), 'default' => 'true', 'description' => 'Whether the metabox is sortable or not' ),
 		array( 'type' => 'select', 'title' => 'Single', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the box supposrts just one entry or if it is a repeater field. By default it is a repeater field.' ),
@@ -207,7 +207,7 @@ function wck_cfc_after_refresh_list(){
 }
 
 /* hook to create custom post types */
-add_action( 'init', 'wck_cfc_create_boxes' );
+add_action( 'admin_init', 'wck_cfc_create_boxes' );
 
 function wck_cfc_create_boxes(){
 	$args = array(
