@@ -42,10 +42,24 @@
 	display:inline-block;
 	vertical-align:top;
 	margin:0;
+	white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .wck-edit, .wck-delete, .wck-number{
 	width:50px;
+	text-align:center !important;
+}
+
+td.wck-number{
+	cursor:move;
+}
+
+.wck-edit .button-secondary{
+	padding:3px 15px;
 }
 
 .mbdelete{
@@ -96,6 +110,10 @@
 .mb-text-input{
 	width:40%;
 	max-width:400px;
+}
+
+.mb-select{
+	min-width:150px;
 }
 
 /* Settings page. */

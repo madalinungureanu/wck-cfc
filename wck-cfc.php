@@ -70,6 +70,16 @@ function wck_cfc_create_custom_fields_cpt(){
 			
 	register_post_type( 'wck-meta-box', $args );		
 }
+/* Remove view action from post list view */
+add_filter('post_row_actions','wck_cfc_remove_view_action');
+function wck_cfc_remove_view_action($actions){
+	global $post;
+   if ($post->post_type =="wck-meta-box"){	
+	   unset( $actions['view'] );	  
+   }
+   return $actions;
+}
+
 
 /* create the meta box */
 add_action( 'init', 'wck_cfc_create_box', 11 );
@@ -103,7 +113,7 @@ function wck_cfc_create_box(){
 		array( 'type' => 'text', 'title' => 'Meta name', 'description' => 'The name of the meta field. It is the name by which you will query the data in the frontend. Must be unique and only lowercase letters', 'required' => true ),		
 		array( 'type' => 'select', 'title' => 'Post Type', 'options' => $post_type_names, 'default-option' => true, 'description' => 'What post type the meta box should be attached to', 'required' => true ),
 		array( 'type' => 'select', 'title' => 'Sortable', 'options' => array( 'true', 'false' ), 'default' => 'true', 'description' => 'Whether the metabox is sortable or not' ),
-		array( 'type' => 'select', 'title' => 'Single', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the box supposrts just one entry or if it is a repeater field. By default it is a repeater field.' ),
+		array( 'type' => 'select', 'title' => 'Repeater', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the box supposrts just one entry or if it is a repeater field. By default it is a single field.' ),
 		array( 'type' => 'text', 'title' => 'Post ID', 'description' => 'ID of a post on which the meta box should appear.' )			
 	);
 	

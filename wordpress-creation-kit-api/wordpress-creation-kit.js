@@ -1,6 +1,9 @@
 /* Add width to elements at startup */
 jQuery(function(){
 	jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });
+	
+	
+	
 });
 
 /* add reccord to the meta */
@@ -152,7 +155,12 @@ function mb_sortable_elements() {
 				});
 			}
 		});
-		jQuery( "#sortable" ).disableSelection();	
+		jQuery( "#sortable" ).disableSelection();
+
+
+		jQuery('.mb-table-container ul').mousedown( function(e){		
+			e.stopPropagation();
+		});	
 }
 jQuery(mb_sortable_elements);
 
@@ -170,6 +178,7 @@ function showUpdateFormMeta(value, id, element_id, nonce){
 				jQuery(response).insertAfter('#container_'+value+' #element_'+element_id);
 				jQuery('#'+value).parent().css('opacity','1');
 				jQuery('#mb-ajax-loading').remove();
+				wckGoToByScroll('update_container_' + value + '_' + element_id);
 		});
 	}
 }
@@ -240,4 +249,8 @@ function wckSyncTranslation(id){
 			if( response == 'syncsuccess' )
 				window.location.reload();			
 		});	
+}
+
+function wckGoToByScroll(id){
+     	jQuery('html,body').animate({scrollTop: jQuery("#"+id).offset().top - 28},'slow');
 }
