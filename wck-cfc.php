@@ -98,14 +98,8 @@ function wck_cfc_create_box(){
 			$post_type_names[] = $post_type->name;
 	}
 	
-	/* get page templates */
-	$page_templates = array();
-	$page_template_results = $wpdb->get_results( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = '_wp_page_template'" ) );
-	
-	foreach( $page_template_results as $page_template_result ){
-		if( $page_template_result->meta_value != 'default' )
-			$page_templates[] = $page_template_result->meta_value;
-	}
+	/* get page templates */	
+	$templates = wck_get_page_templates();	
 	
 	/* set up the fields array */
 	$cfc_box_args_fields = array( 		
@@ -116,8 +110,8 @@ function wck_cfc_create_box(){
 		array( 'type' => 'text', 'title' => 'Post ID', 'description' => 'ID of a post on which the meta box should appear.' )			
 	);
 	
-	if( !empty( $page_templates ) )
-		$cfc_box_args_fields[] = array( 'type' => 'select', 'title' => 'Page Template', 'options' => $page_templates, 'default-option' => true, 'description' => 'If post type is "page" you can further select a page templete. The meta box will only appear  on the page that has that page template selected.' );
+	if( !empty( $templates ) )
+		$cfc_box_args_fields[] = array( 'type' => 'select', 'title' => 'Page Template', 'options' => $templates, 'default-option' => true, 'description' => 'If post type is "page" you can further select a page templete. The meta box will only appear  on the page that has that page template selected.' );
 	
 	/* set up the box arguments */
 	$args = array(
@@ -335,5 +329,46 @@ function wck_cfc_help () {
         'title'	=> __('Advanced Options'),
         'content'	=> '<p>' . __( 'The Advanced Options are set to the most common defaults for custom post types. To display them click the "Show Advanced Options" link.' ) . '</p>',
     ) );
+}
+
+/**
+ * Get the Page Templates available in the current theme
+ *
+ * Based on wordpress get_page_templates()
+ *
+ * @return array Key is the template name, value is the filename of the template
+ */
+function wck_get_page_templates() {
+	$themes = get_themes();
+	$theme = get_current_theme();
+	$templates = $themes[$theme]['Template Files'];
+	$page_templates = array();
+
+	if ( is_array( $templates ) ) {
+		$base = array( trailingslashit(get_template_directory()), trailingslashit(get_stylesheet_directory()) );
+
+		foreach ( $templates as $template ) {
+			$basename = str_replace($base, '', $template);
+
+			// don't allow template files in subdirectories
+			if ( false !== strpos($basename, '/') )
+				continue;
+
+			if ( 'functions.php' == $basename )
+				continue;
+
+			$template_data = implode( '', file( $template ));
+
+			$name = '';
+			if ( preg_match( '|Template Name:(.*)$|mi', $template_data, $name ) )
+				$name = _cleanup_header_comment($name[1]);
+
+			if ( !empty( $name ) ) {
+				$page_templates[trim( $name )] = $basename;
+			}
+		}
+	}
+
+	return $page_templates;
 }
 ?>
