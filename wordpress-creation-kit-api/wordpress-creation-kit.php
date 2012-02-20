@@ -82,6 +82,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		add_action("wp_ajax_wck_update_meta".$this->args['meta_name'], array( &$this, 'wck_update_meta') );
 		add_action("wp_ajax_wck_show_update".$this->args['meta_name'], array( &$this, 'wck_show_update_form') );
 		add_action("wp_ajax_wck_refresh_list".$this->args['meta_name'], array( &$this, 'wck_refresh_list') );
+		add_action("wp_ajax_wck_refresh_entry".$this->args['meta_name'], array( &$this, 'wck_refresh_entry') );
 		add_action("wp_ajax_wck_add_form".$this->args['meta_name'], array( &$this, 'wck_add_form') );
 		add_action("wp_ajax_wck_remove_meta".$this->args['meta_name'], array( &$this, 'wck_remove_meta') );
 		//add_action("wp_ajax_swap_meta_mb", array( & $this, 'mb_swap_meta') );
@@ -248,10 +249,10 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		
 		if($details['type'] == 'upload'){
-			$element .= '<input id="'. esc_attr($meta.str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) ) .'" type="text" size="36" name="'. esc_attr( sanitize_title_with_dashes( remove_accents ( $details['title'] ) ) ) .'" value="'. $value .'" class="mb-text-input mb-field"/>';
-			$element .= '<a id="upload_'. esc_attr(sanitize_title_with_dashes( remove_accents( $details['title'] ) )) .'_button" class="button" onclick="tb_show(\'\', \'media-upload.php?type=file&amp;mb_type='. $var_prefix  . esc_js(strtolower($meta.str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) ) ).'&amp;TB_iframe=true\');">Upload '. $details['title'] .' </a>';
+			$element .= '<input id="'. esc_attr( str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ) ) .'" type="text" size="36" name="'. esc_attr( sanitize_title_with_dashes( remove_accents ( $details['title'] ) ) ) .'" value="'. $value .'" class="mb-text-input mb-field"/>';
+			$element .= '<a id="upload_'. esc_attr(sanitize_title_with_dashes( remove_accents( $details['title'] ) )) .'_button" class="button" onclick="tb_show(\'\', \'media-upload.php?type=file&amp;mb_type='. $var_prefix  . esc_js(strtolower( str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ) ) ).'&amp;TB_iframe=true\');">Upload '. $details['title'] .' </a>';
 			$element .= '<script type="text/javascript">';				
-				$element .= 'window.'. $var_prefix . strtolower($meta.str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) ) .' = jQuery(\''.$edit_class.'#'. $meta.str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ).'\');';
+				$element .= 'window.'. $var_prefix . strtolower( str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ) ) .' = jQuery(\''.$edit_class.'#'. str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ).'\');';
 			$element .= '</script>';
 		}		
 		
@@ -320,28 +321,23 @@ class WCK_CFC_Wordpress_Creation_Kit{
 	 */
 	function mb_update_form($fields, $meta, $id, $element_id){
 		
-		$update_nonce = wp_create_nonce( 'wck-update-entry' );
-		
-		// create the $fields_myname variable dinamically so we can use the global one
-		//$fields = 'fields_'.$meta;
-		//global $$fields;
+		$update_nonce = wp_create_nonce( 'wck-update-entry' );	
 				
 		if( $this->args['context'] == 'post_meta' )
 			$results = get_post_meta($id, $meta, true);
 		else if ( $this->args['context'] == 'option' )
-			$results = get_option( $meta );
+			$results = get_option( $meta );		
 		
-		
-		$nr = count($results[$element_id])+4;
 		$form = '';
-		$form .= '<tr id="update_container_'.$meta.'_'.$element_id.'"><td colspan="'.$nr.'">';
+		$form .= '<tr id="update_container_'.$meta.'_'.$element_id.'"><td colspan="4">';
 		
 		if($results != null){
 			$i = 0;
-			$form .= '<ul class="mb-list-entry-fields">';
+			$form .= '<ul class="mb-list-entry-fields">';			
 			
-			foreach($results[$element_id] as $key => $value){				
-				$details = $fields[$i];
+			foreach( $fields as $field ){				
+				$details = $field;
+				$value = $results[$element_id][sanitize_title_with_dashes( remove_accents( $details['title'] ) )];
 				
 				$form = apply_filters( "wck_before_update_form_{$meta}_element_{$i}", $form, $element_id, $value );
 				
@@ -379,10 +375,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 	 * the meta to apear in custom fields box.
 	 * @param int $id Post id
 	 */
-	function wck_output_meta_content($meta, $id, $fields){
-		
-		$edit_nonce = wp_create_nonce( 'wck-edit-entry' );
-		$delete_nonce = wp_create_nonce( 'wck-delete-entry' );		
+	function wck_output_meta_content($meta, $id, $fields){		
 		
 		if( $this->args['context'] == 'post_meta' )
 			$results = get_post_meta($id, $meta, true);
@@ -403,36 +396,46 @@ class WCK_CFC_Wordpress_Creation_Kit{
 			$i=0;
 			foreach ($results as $result){			
 				
-				$entry_nr = $i+1;
+				$list .= self::wck_output_entry_content( $meta, $id, $fields, $results, $i );
 				
-				$list .= '<tr id="element_'.$i.'">'; 
-				$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-number">'. $entry_nr .'</td>'; 
-				$list .= '<td><ul>';
-				
-				$j = 0;				
-				
-				foreach( $fields as $field ){
-					$details = $field;
-					$value = $results[$i][sanitize_title_with_dashes( remove_accents( $details['title'] ) )];
-					$display_value = '<pre>'.htmlspecialchars( $results[$i][sanitize_title_with_dashes( remove_accents( $details['title'] ) )] ) . '</pre>';
-					
-					$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $i, $value );		
-					
-					$list .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'"><strong>'.$details['title'].': </strong>'.$display_value.' </li>';							
-					
-					$list = apply_filters( "wck_after_listed_{$meta}_element_{$j}", $list, $i, $value );
-					
-					$j++;					
-				}
-				$list .= '</ul></td>';				
-				$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-edit"><a href="javascript:void(0)" class="button-secondary"  onclick=\'showUpdateFormMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($i).'", "'.esc_js($edit_nonce).'")\' title="Edit this item">Edit</a></td>';
-				$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-delete"><a href="javascript:void(0)" class="mbdelete" onclick=\'removeMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($i).'", "'.esc_js($delete_nonce).'")\' title="Delete this item">Delete</a></td>';
-				
-				$list .= '</tr>';
 				$i++;
 			}
 		}
 		$list .= '</table>';
+		return $list;
+	}
+	
+	function wck_output_entry_content( $meta, $id, $fields, $results, $element_id ){
+		$edit_nonce = wp_create_nonce( 'wck-edit-entry' );
+		$delete_nonce = wp_create_nonce( 'wck-delete-entry' );		
+		$entry_nr = $element_id +1;
+		
+		$list = '';
+		$list .= '<tr id="element_'.$element_id.'">'; 
+		$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-number">'. $entry_nr .'</td>'; 
+		$list .= '<td><ul>';
+		
+		$j = 0;				
+		
+		foreach( $fields as $field ){
+			$details = $field;
+			$value = $results[$element_id][sanitize_title_with_dashes( remove_accents( $details['title'] ) )];
+			$display_value = '<pre>'.htmlspecialchars( $results[$element_id][sanitize_title_with_dashes( remove_accents( $details['title'] ) )] ) . '</pre>';
+			
+			$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $element_id, $value );		
+			
+			$list .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'"><strong>'.$details['title'].': </strong>'.$display_value.' </li>';							
+			
+			$list = apply_filters( "wck_after_listed_{$meta}_element_{$j}", $list, $element_id, $value );
+			
+			$j++;					
+		}
+		$list .= '</ul></td>';				
+		$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-edit"><a href="javascript:void(0)" class="button-secondary"  onclick=\'showUpdateFormMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($element_id).'", "'.esc_js($edit_nonce).'")\' title="Edit this item">Edit</a></td>';
+		$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-delete"><a href="javascript:void(0)" class="mbdelete" onclick=\'removeMeta("'.esc_js($meta).'", "'.esc_js($id).'", "'.esc_js($element_id).'", "'.esc_js($delete_nonce).'")\' title="Delete this item">Delete</a></td>';
+		
+		$list .= '</tr>';
+	
 		return $list;
 	}
 
@@ -573,6 +576,24 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		echo self::wck_output_meta_content($meta, $id, $this->args['meta_array']);
 		
 		do_action( "wck_refresh_list_{$meta}" );
+		
+		exit;
+	}
+	
+	/* ajax to refresh an entry content */
+	function wck_refresh_entry(){
+		$meta = $_POST['meta'];
+		$id = absint($_POST['id']);
+		$element_id = $_POST['element_id'];
+		
+		if( $this->args['context'] == 'post_meta' )
+			$results = get_post_meta($id, $meta, true);
+		else if ( $this->args['context'] == 'option' )
+			$results = get_option( $meta );
+		
+		echo self::wck_output_entry_content( $meta, $id, $this->args['meta_array'], $results, $element_id );
+		
+		do_action( "wck_refresh_entry_{$meta}" );
 		
 		exit;
 	}

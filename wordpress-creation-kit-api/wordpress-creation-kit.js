@@ -124,7 +124,8 @@ function removeMeta(value, id, element_id, nonce){
 */
 
 /* reorder elements through drag and drop */
-function mb_sortable_elements() {		
+function mb_sortable_elements() {
+		alert('aaa');
 		jQuery( ".mb-table-container tbody" ).not( jQuery( ".mb-table-container.single tbody, .mb-table-container.not-sortable tbody" ) ).sortable({
 			update: function(event, ui){
 				
@@ -230,12 +231,13 @@ function updateMeta(value, id, element_id, nonce){
 			else{
 				jQuery('#update_container_'+value+'_'+element_id).remove();
 				/* refresh the list */
-				jQuery.post( ajaxurl ,  { action:"wck_refresh_list"+value, meta:value, id:id}, function(response) {	
-					jQuery('#container_'+value).replaceWith(response);
+				jQuery.post( ajaxurl ,  { action:"wck_refresh_entry"+value, meta:value, id:id, element_id:element_id}, function(response) {	
+					jQuery('#container_'+value+' #element_'+element_id).replaceWith(response);
 					
 					jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });
 					
-					mb_sortable_elements();
+					jQuery( '#container_' + value + " tbody" ).sortable("enable");
+					
 					jQuery('#'+value).parent().css('opacity','1');
 					jQuery('#mb-ajax-loading').remove();				
 				});

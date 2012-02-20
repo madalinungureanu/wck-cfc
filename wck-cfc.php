@@ -108,8 +108,7 @@ function wck_cfc_create_box(){
 	}
 	
 	/* set up the fields array */
-	$cfc_box_args_fields = array( 
-		array( 'type' => 'text', 'title' => 'Meta Box Title', 'description' => 'Title of the meta box', 'required' => true ), 
+	$cfc_box_args_fields = array( 		
 		array( 'type' => 'text', 'title' => 'Meta name', 'description' => 'The name of the meta field. It is the name by which you will query the data in the frontend. Must be unique and only lowercase letters', 'required' => true ),		
 		array( 'type' => 'select', 'title' => 'Post Type', 'options' => $post_type_names, 'default-option' => true, 'description' => 'What post type the meta box should be attached to', 'required' => true ),
 		array( 'type' => 'select', 'title' => 'Sortable', 'options' => array( 'true', 'false' ), 'default' => 'true', 'description' => 'Whether the metabox is sortable or not' ),
@@ -127,7 +126,8 @@ function wck_cfc_create_box(){
 		'post_type' => 'wck-meta-box',
 		'meta_name' => 'wck_cfc_args',
 		'meta_array' => $cfc_box_args_fields,			
-		'sortable' => false
+		'sortable' => false,
+		'single' => true
 	);
 
 	/* create the box */
@@ -231,6 +231,7 @@ function wck_cfc_create_boxes(){
 		$wck_cfc_args = get_post_meta( $meta_box->ID, 'wck_cfc_args', true );
 		$wck_cfc_fields = get_post_meta( $meta_box->ID, 'wck_cfc_fields', true );
 		
+		$box_title = get_the_title( $meta_box->ID );
 		
 		$fields_array = array();
 		if( !empty( $wck_cfc_fields ) ){
@@ -252,8 +253,8 @@ function wck_cfc_create_boxes(){
 		if( !empty( $wck_cfc_args ) ){
 			foreach( $wck_cfc_args as $wck_cfc_arg ){
 				$box_args = array(
-								'metabox_id' => sanitize_title_with_dashes( remove_accents ( $wck_cfc_arg['meta-box-title'] ) ),
-								'metabox_title' => $wck_cfc_arg['meta-box-title'],
+								'metabox_id' => sanitize_title_with_dashes( remove_accents ( $box_title ) ),
+								'metabox_title' => $box_title,
 								'post_type' => $wck_cfc_arg['post-type'],
 								'meta_name' => $wck_cfc_arg['meta-name'],
 								'meta_array' => $fields_array
