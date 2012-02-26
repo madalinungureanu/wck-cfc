@@ -13,3 +13,28 @@
 #visibility.misc-pub-section {
 	display:none;
 }
+
+li.slug-title{
+	margin-top:-6px;
+	font-size:10px;
+}
+
+li.slug-title span{
+	padding:0 3px;
+	background-color:#FFFBCC;
+}
+
+.cfc-message{
+	margin: 0 0 15px;
+	background-color: #FFFFE0;
+    border-color: #E6DB55;
+	padding: 0 0.6em;
+	border-radius: 3px 3px 3px 3px;
+    border-style: solid;
+    border-width: 1px;	
+}
+
+.cfc-message p{
+	margin: 0.5em 0;
+    padding: 2px;
+}

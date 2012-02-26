@@ -466,7 +466,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 	}
 
 	/* Helper function for required fields */
-	function wck_test_required( $meta, $values ){
+	function wck_test_required( $meta, $values, $id ){
 		$fields = $this->args['meta_array'];
 		$required_fields = array();
 		$required_fields_with_errors = array();
@@ -478,8 +478,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		}
 		
 		foreach( $values as $key => $value ){
-			if( array_key_exists( $key, $required_fields ) && apply_filters( "wck_required_test_{$meta}_{$key}", empty( $value ), $value ) ){
-				$required_message .= apply_filters( "wck_required_message_{$meta}_{$key}", "Please enter a value for the required field $required_fields[$key] \n" );
+			if( array_key_exists( $key, $required_fields ) && apply_filters( "wck_required_test_{$meta}_{$key}", empty( $value ), $value, $id ) ){
+				$required_message .= apply_filters( "wck_required_message_{$meta}_{$key}", "Please enter a value for the required field $required_fields[$key] \n", $value );
 				$required_fields_with_errors[] = $key;
 			}
 		}	
@@ -500,7 +500,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		$values = $_POST['values'];
 		
 		/* check required fields */
-		self::wck_test_required( $meta, $values );		
+		self::wck_test_required( $meta, $values, $id );		
 		
 		if( $this->args['context'] == 'post_meta' )
 			$results = get_post_meta($id, $meta, true);
@@ -539,7 +539,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		$values = $_POST['values'];
 		
 		/* check required fields */
-		self::wck_test_required( $meta, $values );
+		self::wck_test_required( $meta, $values, $id );
 		
 		if( $this->args['context'] == 'post_meta' )
 			$results = get_post_meta($id, $meta, true);
