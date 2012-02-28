@@ -499,6 +499,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		$id = absint($_POST['id']);
 		$values = $_POST['values'];
 		
+		$values = apply_filters( "wck_add_meta_filter_values_{$meta}", $values );
+		
 		/* check required fields */
 		self::wck_test_required( $meta, $values, $id );		
 		
@@ -537,6 +539,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		$id = absint($_POST['id']);
 		$element_id = $_POST['element_id'];	
 		$values = $_POST['values'];
+		
+		$values = apply_filters( "wck_update_meta_filter_values_{$meta}", $values, $element_id );
 		
 		/* check required fields */
 		self::wck_test_required( $meta, $values, $id );
@@ -675,23 +679,6 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		exit;
 	}
 
-
-
-	/* ajax to swap two reccords */
-	/*function mb_swap_meta(){
-		$meta = $_POST['meta'];
-		$id = $_POST['id'];
-		$element_id = $_POST['element_id'];	
-		$swap_with = $_POST['swap_with'];	
-		$results = get_post_meta($id, $meta, true);
-		
-		$temp = $results[$element_id];
-		$results[$element_id] = $results[$swap_with];
-		$results[$swap_with] = $temp;
-		
-		update_post_meta($id, $meta, $results);
-		exit;
-	}*/
 
 	/* ajax to reorder records */
 	function wck_reorder_meta(){
@@ -968,71 +955,6 @@ class WCK_CFC_Wordpress_Creation_Kit{
 	}	
 }
 
-/* WPML Compatibility */
-//add_filter('icl_data_from_pro_translation', 'wck_wpml_get_translation');
-/*function wck_wpml_get_translation($translation){
-	global $sitepress_settings;
-	$sitepress_settings['wck_wpml_translation'] = $translation;
-	
-	return $translation;
-}*/
-
-/*add_action('init', 'bnngjnfkjgn');
-function bnngjnfkjgn(){
-	global $sitepress_settings;
-	$wck_wpml_translation = 'asdasdasdasfsadasdas';
-	$sitepress_settings['wck_wpml_translation'] = 'nknd,fgjkdfljgd;lfgl;d';
-	var_dump($sitepress_settings);
-}
-
-add_action('admin_footer', 'jkjkghjkgjhkjgkh');
-function jkjkghjkgjhkjgkh(){
-	global $sitepress_settings;
-	var_dump($sitepress_settings);
-}
-*/
-//add_action( 'icl_pro_translation_saved', 'wck_update_translation_meta_boxes', 10, 2 );
-/*function wck_update_translation_meta_boxes($new_post_id, $translation){
-	global $sitepress_settings;
-	//$translation = $sitepress_settings['wck_wpml_translation'];
-	var_dump($translation);
-	
-	$custom_field_keys = get_post_custom_keys( $translation['original_id'] );
-	$wck_array = array();
-	
-	foreach((array)$sitepress_settings['translation-management']['custom_fields_translation'] as $cf => $op){
-		$cf_name_array = explode( '_', $cf );
-		if( count( $cf_name_array ) >= 4 ){
-			$cf_name = implode( '_', array_slice( $cf_name_array, 1, -2 ) );
-			
-			if( in_array( $cf_name, $custom_field_keys ) && $cf_name_array[0] == 'wckwpml' ){
-				
-				$wck_position = $cf_name_array[ count($cf_name_array) -1 ];
-				$wck_key = $cf_name_array[ count($cf_name_array) -2 ];
-				
-				if ($op == 1) 
-					$wck_array[$cf_name][$wck_position][$wck_key] = get_post_meta($translation['original_id'],$cf,true);
-				elseif( $op == 2 && isset($translation['field-'.$cf] ) ){
-					$field_translation = $translation['field-'.$cf];
-					$field_type = $translation['field-'.$cf.'-type'];
-					if ($field_type == 'custom_field') {
-						$field_translation = str_replace ( '&#0A;', "\n", $field_translation );                                
-						// always decode html entities  eg decode &amp; to &
-						$field_translation = html_entity_decode($field_translation);
-						$wck_array[$cf_name][$wck_position][$wck_key] = $field_translation;
-					}            
-				}
-			}
-		}		
-	}
-	
-	if( !empty( $wck_array ) ){
-		foreach( $wck_array as $wck_key => $wck_meta ){
-			update_post_meta( $new_post_id, $wck_key, $wck_meta );
-		}
-	}	
-	
-}*/
 
 /*
 Helper class that creates admin menu pages ( both top level menu pages and submenu pages )
@@ -1116,7 +1038,6 @@ class WCK_CFC_WCK_Page_Creator{
 			add_action( 'network_admin_menu', array( &$this, 'wck_page_init' ), $this->args['priority'] );
 		}				
 	}
-
 	
 	/**
 	 * Function that creates the admin page

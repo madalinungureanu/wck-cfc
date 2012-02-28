@@ -1,7 +1,27 @@
 <?php
 /*
-Plugin Name: WCK CFC
-Description: Creates Custom Meta Box Fields
+Plugin Name: WCK Custom Fields Creator
+Description: Creates Custom Meta Box Fields for WordPress. It supports repeater fields and uses AJAX to handle data.
+Author: Reflection Media, Madalin Ungureanu
+Version: 1.0
+Author URI: http://www.reflectionmedia.ro
+
+License: GPL2
+
+== Copyright ==
+Copyright 2011 Reflection Media (wwww.reflectionmedia.ro)
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
 /* include Custom Fields Creator API */
@@ -59,7 +79,7 @@ function wck_cfc_create_custom_fields_cpt(){
 	$args = array(
 		'labels' => $labels,
 		'public' => true,
-		'publicly_queryable' => true,
+		'publicly_queryable' => false,
 		'show_ui' => true, 	
 		'show_in_menu' => 'wck-page', 				
 		'has_archive' => false,
@@ -103,15 +123,15 @@ function wck_cfc_create_box(){
 	
 	/* set up the fields array */
 	$cfc_box_args_fields = array( 		
-		array( 'type' => 'text', 'title' => 'Meta name', 'description' => 'The name of the meta field. It is the name by which you will query the data in the frontend. Must be unique and only lowercase letters', 'required' => true ),		
-		array( 'type' => 'select', 'title' => 'Post Type', 'options' => $post_type_names, 'default-option' => true, 'description' => 'What post type the meta box should be attached to', 'required' => true ),
-		array( 'type' => 'select', 'title' => 'Sortable', 'options' => array( 'true', 'false' ), 'default' => 'true', 'description' => 'Whether the metabox is sortable or not' ),
-		array( 'type' => 'select', 'title' => 'Repeater', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the box supposrts just one entry or if it is a repeater field. By default it is a single field.' ),
+		array( 'type' => 'text', 'title' => 'Meta name', 'description' => 'The name of the meta field. It is the name by which you will query the data in the frontend. Must be unique, only lowercase letters, no spaces and no special characters.', 'required' => true ),		
+		array( 'type' => 'select', 'title' => 'Post Type', 'options' => $post_type_names, 'default-option' => true, 'description' => 'What post type the meta box should be attached to', 'required' => true ),		
+		array( 'type' => 'select', 'title' => 'Repeater', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the box supports just one entry or if it is a repeater field. By default it is a single field.' ),
+		array( 'type' => 'select', 'title' => 'Sortable', 'options' => array( 'true', 'false' ), 'default' => 'false', 'description' => 'Whether the entries are sortable or not. Thsi is valid for repeater fields.' ),
 		array( 'type' => 'text', 'title' => 'Post ID', 'description' => 'ID of a post on which the meta box should appear.' )			
 	);
 	
 	if( !empty( $templates ) )
-		$cfc_box_args_fields[] = array( 'type' => 'select', 'title' => 'Page Template', 'options' => $templates, 'default-option' => true, 'description' => 'If post type is "page" you can further select a page templete. The meta box will only appear  on the page that has that page template selected.' );
+		$cfc_box_args_fields[] = array( 'type' => 'select', 'title' => 'Page Template', 'options' => $templates, 'default-option' => true, 'description' => 'If post type is "page" you can further select a page templete. The meta box will only appear  on the page that has that selected page template.' );
 	
 	/* set up the box arguments */
 	$args = array(
@@ -299,13 +319,20 @@ function wck_cfc_ceck_meta_name( $bool, $value, $post_id ){
 			$check_meta_existance = false;
 	}
 	
-	return ( $check_meta_existance || empty($value) );
+	if( strpos( $value, ' ' ) === false )
+		$contains_spaces = false;
+	else 
+		$contains_spaces = true;
+	
+	return ( $check_meta_existance || empty($value) || $contains_spaces );
 }
 
 add_filter( 'wck_required_message_wck_cfc_args_meta-name', 'wck_cfc_change_meta_message', 10, 2 );
 function wck_cfc_change_meta_message( $message, $value ){
 	if( empty( $value ) )
 		return $message;
+	else if( strpos( $value, ' ' ) !== false )
+		return "Choose a different Meta Name as this one contains spaces\n";
 	else
 		return "Choose a different Meta Name as this one already exists\n";
 }
@@ -397,7 +424,7 @@ function wck_cfc_edit_columns($columns){
 	return $columns;
 }
 
-// Register the column as sortable
+/* Register the column as sortable */
 add_filter( 'manage_edit-wck-meta-box_sortable_columns', 'wck_cfc_register_sortable_columns' );
 function wck_cfc_register_sortable_columns( $columns ) {
 	$columns['cfc-id'] = 'cfc-id';
@@ -407,6 +434,7 @@ function wck_cfc_register_sortable_columns( $columns ) {
 	return $columns;
 }
 
+/* Tell WordPress how to handle the sorting */
 add_filter( 'request', 'wck_cfc_column_orderby' );
 function wck_cfc_column_orderby( $vars ) {
 	if ( isset( $vars['orderby'] ) && 'cfc-id' == $vars['orderby'] ) {
@@ -433,6 +461,7 @@ function wck_cfc_column_orderby( $vars ) {
 	return $vars;
 }
 
+/* Let's set up what to display in the columns */
 add_action("manage_wck-meta-box_posts_custom_column",  "wck_cfc_custom_columns", 10, 2);
 function wck_cfc_custom_columns( $column_name, $post_id ){
 	if( $column_name == 'cfc-id' ){
@@ -497,15 +526,21 @@ function wck_cfc_help () {
     ) );
 	
 	$screen->add_help_tab( array(
-        'id'	=> 'wck_cfc_labels',
-        'title'	=> __('Labels'),
-        'content'	=> '<p>' . __( 'For simplicity you are required to introduce only the Singular Label and Plural Label from wchich the rest of the labels will be formed.<br />For a more detailed control of the labels you just have to click the "Show Advanced Label Options" link and all the availabel labels will be displayed' ) . '</p>',
+        'id'	=> 'wck_cfc_arguments',
+        'title'	=> __('Meta Box Arguments'),
+        'content'	=> '<p>' . __( 'Define here the rules for the meta box. This rules are used to set up where the meta box will appear, it\'s type and also the meta key name stored in the database. The name of the entry (Enter title here) will be used as the meta box title.' ) . '</p>',
     ) );
 	
 	$screen->add_help_tab( array(
-        'id'	=> 'wck_cfc_advanced',
-        'title'	=> __('Advanced Options'),
-        'content'	=> '<p>' . __( 'The Advanced Options are set to the most common defaults for custom post types. To display them click the "Show Advanced Options" link.' ) . '</p>',
+        'id'	=> 'wck_cfc_fields',
+        'title'	=> __('Meta Box Fields'),
+        'content'	=> '<p>' . __( 'Define here the fields contained in the meta box. From "Field Title" a slug will be automatically generated and you will use this slug to display the data in the frontend.' ) . '</p>',
+    ) );
+	
+	$screen->add_help_tab( array(
+        'id'	=> 'wck_cfc_example',
+        'title'	=> __('CFC Frontend Example'),
+        'content'	=> '<p>' . __( 'Let\'s consider we have a meta box with the following arguments:<br /> - Meta name: books <br /> - Post Type: post <br />And we also have two fields deffined:<br /> - A text field with the Field Title: Book name <br /> - And another text field with the Field Title: Author name ' ) . '</p>' . '<p>' . __( 'You will notice that slugs will automatically be created for the two text fields. For "Book name" the slug will be "book-name" and for "Author name" the slug will be "author-name"' ) . '</p>' . '<p>' . __( 'Let\'s see what the code for displaying the meta box values in single.php of your theme would be:' ) . '</p>' . '<pre>' . '$books = get_post_meta( $post->ID, \'books\', true ); <br />foreach( $books as $book){<br />	echo $book[\'book-name\'];<br / >	echo $book[\'author-name\'];<br />}' . '</pre>' . '<p>' . __( 'So as you can see the Meta Name "books" is used as the $key parameter of the funtion <a href="http://codex.wordpress.org/Function_Reference/get_post_meta" target="_blank">get_post_meta()</a> and the slugs of the text fields are used as keys for the resulting array. Basically CFC stores the entries as post meta in a multidimensioanl array. In our case the array would be: <br /><pre>array( array( "book-name" => "The Hitchhiker\'s Guide To The Galaxy", "author-name" => "Douglas Adams" ),  array( "book-name" => "Ender\'s Game", "author-name" => "Orson Scott Card" ) );</pre> This is true even for single entries.' ) . '</p>'
     ) );
 }
 
