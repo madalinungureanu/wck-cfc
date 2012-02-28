@@ -1,69 +1,63 @@
 === WCK Custom Fields Creator === 
 
 Contributors: reflectionmedia, madalin.ungureanu
-Donate link: http://www.cozmoslabs.com/wordpress-profile-builder/
-Tags: registration, profile, user registration, custom field registration, customize profile, user fields, builder, profile builder, custom profile, user profile, custom user profile, user profile page, 
-custom registration, custom registration form, custom registration page, extra user fields, registration page, user custom fields, user listing, user login, user registration form, front-end login, 
-front-end register, front-end registration, frontend edit profile, edit profile
+Donate link: http://www.cozmoslabs.com/wordpress-creation-kit/custom=fields-creator/
+Tags: custom fields creator, meata boxes, repeater fields, ajax, post meta, custom fields, repeater
 Requires at least: 3.1
-Tested up to: 3.3
-Stable tag: 1.1.24
+Tested up to: 3.3.1
+Stable tag: 1.0
 
-Simple to use profile plugin allowing front-end login, registration and edit profile by using shortcodes. 
+WCK Custom Fields Creator allows you to easily create custom meta boxes for WordPress without any programming knowledge. It supports repeater fields and uses AJAX to handle data.
  
 == Description ==
 
-Profile Builder is WordPress registration done right. 
+WCK Custom Fields Creator offers an UI for setting up custom meta boxes for your posts, pages or custom post types.
 
-It lets you customize your website by adding a front-end menu for all your users, 
-giving them a more flexible way to modify their user-information or register new users (front-end registration). 
-Also, grants users with administrator rights to customize basic user fields or add custom ones. 
+Features:
 
-To achieve this, just create a new page and give it an intuitive name(i.e. Edit Profile).
-Now all you need to do is add the following shortcode(for the previous example): [wppb-edit-profile]. 
-Publish the page and you are done!
-
-You can use the following shortcodes:
-
-* **[wppb-edit-profile]** - to grant users front-end access to their personal information (requires user to be logged in).
-* **[wppb-login]** - to add a front-end log-in form.
-* **[wppb-register]** - to add a front-end registration form.
-* **[wppb-recover-password]** - to add a password recovery form.
-
-Users with administrator rights have access to the following features:
-
-* add a custom stylesheet/inherit values from the current theme or use one of the following built into this plugin: default, white or black.
-* select whether to display or not the admin bar in the front end for a specific user-group registered to the site.
-* select which information-field can users see/modify. The hidden fields values remain unmodified.
-
-
+* Support for Repeater Fields.
+* Drag and Drop to sort the Repeater Fields.
+* Support for all input fields: text, textarea, select, checkbox, radio.
+* Image / File upload supported via the WordPress Media Uploader.
+* Possibility to target only certain page-templates, target certain custom post types and even unique ID’s.
+* All data handling is done with ajax
+* Data is saved as postmeta
 
 == Installation ==
 
-1. Upload the profile-builder folder to the '/wp-content/plugins/' directory
+1. Upload the wck-cfc folder to the '/wp-content/plugins/' directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
-1. Create a new page and use one of the shortcodes available. Publish the page and you're done!
+1. Then navigate to WCK => Custom Fields Creator tab and start creating your meta boxes
 
 == Frequently Asked Questions ==
 
-= I navigated away from Profile Builder and now I can’t find it anymore; where is it? =
-	
-	Profile Builder can be found in the default menu of your WordPress installation under the “Users” sub-menu.
+= How do I display the contents of the meta box in the frontend? =
 
-= Why do the custom WordPress fields still show up, even though I set it to be "hidden"? =
+Let’s consider we have a meta box with the following arguments:
+- Meta name: books
+- Post Type: post
+And we also have two fields deffined:
+- A text field with the Field Title: Book name
+- And another text field with the Field Title: Author name
 
-	Profile Builder only disables the default fields in the front-end of your site/blog, it does absolutely nothing in the dashboard.
- 
+You will notice that slugs will automatically be created for the two text fields. For “Book name” the slug will be “book-name” and for “Author name” the slug will be “author-name”
 
-= I can’t find a question similar to my issue; Where can I find support? =
+Let’s see what the code for displaying the meta box values in single.php of your theme would be:
 
-	For more information please visit http://www.cozmoslabs.com and check out the faq section from Profile Builder
+`<?php $books = get_post_meta( $post->ID, 'books', true ); 
+foreach( $books as $book){
+	echo $book['book-name'];
+	echo $book['author-name'];
+}?>`
 
+So as you can see the Meta Name “books” is used as the $key parameter of the funtion get_post_meta() and the slugs of the text fields are used as keys for the resulting array. Basically CFC stores the entries as post meta in a multidimensioanl array. In our case the array would be:
+
+`<?php array( array( "book-name" => "The Hitchhiker's Guide To The Galaxy", "author-name" => "Douglas Adams" ),  array( "book-name" => "Ender's Game", "author-name" => "Orson Scott Card" ) );?>`
+
+This is true even for single entries.
 
 == Screenshots ==
-1. Basic information: screenshot1.jpg
-2. Layout Control: screenshot2.jpg
-3. Show/Hide Admin Bar: screenshot3.jpg
-4. Select Default User Fields: screenshot4
-6. Register Page: screenshot6.jpg
-7. Logged in Page: screenshot7.jpg
+1. List of Meta boxes: screenshot-1.jpg
+2. Meta box arguments: screenshot-2.jpg
+3. Meta box fields: screenshot-3.jpg
+4. Some defined fields: screenshot-4.jpg
