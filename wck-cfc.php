@@ -150,7 +150,7 @@ function wck_cfc_create_box(){
 	
 	/* set up the fields array */
 	$cfc_box_fields_fields = array( 
-		array( 'type' => 'text', 'title' => 'Field Title', 'description' => 'Title of the field', 'required' => true ),
+		array( 'type' => 'text', 'title' => 'Field Title', 'description' => 'Title of the field. A slug will automatically be generated.', 'required' => true ),
 		array( 'type' => 'select', 'title' => 'Field Type', 'options' => array( 'text', 'textarea', 'select', 'checkbox', 'radio', 'upload' ), 'default-option' => true, 'description' => 'The field type', 'required' => true ),
 		array( 'type' => 'textarea', 'title' => 'Description', 'description' => 'The description of the field.' ),				
 		array( 'type' => 'select', 'title' => 'Required', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the field is required or not' ),
@@ -225,7 +225,7 @@ function wck_cfc_display_label_wrapper_options_end( $form, $i, $value ){
 /* Show the slug for field title */
 add_filter( "wck_after_listed_wck_cfc_fields_element_0", 'wck_cfc_display_field_title_slug', 10, 3 );
 function wck_cfc_display_field_title_slug( $form, $i, $value ){	
-		$form .= '<li class="slug-title"><em>Slug:</em><span>'. sanitize_title_with_dashes( remove_accents( $value ) ) .'</span></li>';
+		$form .= '<li class="slug-title"><em>Slug:</em><span>'. sanitize_title_with_dashes( remove_accents( $value ) ) .'</span> (Note:changing the slug when you already have a lot of existing entries may result in unexppected bahaviour.) </li>';
 	return $form;
 }
 

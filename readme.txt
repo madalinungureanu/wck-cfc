@@ -1,7 +1,7 @@
-=== WCK Custom Fields Creator === 
+=== Custom Fields Creator === 
 
 Contributors: reflectionmedia, madalin.ungureanu
-Donate link: http://www.cozmoslabs.com/wordpress-creation-kit/custom=fields-creator/
+Donate link: http://www.cozmoslabs.com/wordpress-creation-kit/custom-fields-creator/
 Tags: custom fields creator, meata boxes, repeater fields, ajax, post meta, custom fields, repeater
 Requires at least: 3.1
 Tested up to: 3.3.1
