@@ -3,7 +3,7 @@
 Plugin Name: WCK Custom Fields Creator
 Description: Creates Custom Meta Box Fields for WordPress. It supports repeater fields and uses AJAX to handle data.
 Author: Reflection Media, Madalin Ungureanu
-Version: 1.0
+Version: 1.0.2
 Author URI: http://www.reflectionmedia.ro
 
 License: GPL2

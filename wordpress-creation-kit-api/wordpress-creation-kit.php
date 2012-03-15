@@ -249,10 +249,38 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		
 		if($details['type'] == 'upload'){
-			$element .= '<input id="'. esc_attr( str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ) ) .'" type="text" size="36" name="'. esc_attr( sanitize_title_with_dashes( remove_accents ( $details['title'] ) ) ) .'" value="'. $value .'" class="mb-text-input mb-field"/>';
-			$element .= '<a id="upload_'. esc_attr(sanitize_title_with_dashes( remove_accents( $details['title'] ) )) .'_button" class="button" onclick="tb_show(\'\', \'media-upload.php?type=file&amp;mb_type='. $var_prefix  . esc_js(strtolower( str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ) ) ).'&amp;TB_iframe=true\');">Upload '. $details['title'] .' </a>';
+			/* define id's for input and info div */
+			$upload_input_id = str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) );
+			$upload_info_div_id = str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta .'_info_container_'. $details['title'] ) ) );
+			
+			/* hidden input that will hold the attachment id */
+			$element .= '<input id="'. esc_attr( $upload_input_id ) .'" type="hidden" size="36" name="'. esc_attr( sanitize_title_with_dashes( remove_accents ( $details['title'] ) ) ) .'" value="'. $value .'" class="mb-text-input mb-field"/>';
+			
+			/* container for the image preview (or file ico) and name and file type */
+			if( !empty ( $value ) ){
+				$file_src = wp_get_attachment_url($value);
+				$thumbnail = wp_get_attachment_image( $value, array( 80, 60 ), true );
+				$file_name = get_the_title( $value );
+				
+				if ( preg_match( '/^.*?\.(\w+)$/', get_attached_file( $value ), $matches ) )
+					$file_type = esc_html( strtoupper( $matches[1] ) );
+				else
+					$file_type = strtoupper( str_replace( 'image/', '', get_post_mime_type( $value ) ) );
+			}
+			$element .= '<div id="'. esc_attr( $upload_info_div_id ) .'" class="upload-field-details">'. $thumbnail .'<p><span class="file-name">'. $file_name .'</span><span class="file-type">'. $file_type . '</span></p></div>';
+			
+			/* the upload link. we send through get the hidden input id, details div id and meta name */
+			if( $details['attach_to_post'] )
+				$attach_to_post = 'post_id='. get_the_id() .'&amp;';
+			else
+				$attach_to_post = '';
+				
+			$element .= '<a id="upload_'. esc_attr(sanitize_title_with_dashes( remove_accents( $details['title'] ) )) .'_button" class="button" onclick="tb_show(\'\', \'media-upload.php?'.$attach_to_post.'type=file&amp;mb_type='. $var_prefix  . esc_js(strtolower( $upload_input_id ) ).'&amp;mb_info_div='.$var_prefix  . esc_js(strtolower( $upload_info_div_id ) ).'&amp;meta_name='.$meta.'&amp;TB_iframe=1\');">Upload '. $details['title'] .' </a>';
+			
+			/* add js global var for the hidden input, and info container div */
 			$element .= '<script type="text/javascript">';				
-				$element .= 'window.'. $var_prefix . strtolower( str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ) ) .' = jQuery(\''.$edit_class.'#'. str_replace( '-', '_', sanitize_title_with_dashes( remove_accents( $meta . $details['title'] ) ) ).'\');';
+				$element .= 'window.'. $var_prefix . strtolower( $upload_input_id ) .' = jQuery(\''.$edit_class.'#'. $upload_input_id.'\');';
+				$element .= 'window.'. $var_prefix . strtolower( $upload_info_div_id ) .' = jQuery(\''.$edit_class.'#'. $upload_info_div_id.'\');';
 			$element .= '</script>';
 		}		
 		
@@ -357,10 +385,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 			$form .= '</li>';			
 			
 			$form .= '</ul>';
-		}
-		//var_dump($$fields);
+		}		
 		$form .= '</td></tr>';
-
 		
 		return $form;
 	}
@@ -419,8 +445,26 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		foreach( $fields as $field ){
 			$details = $field;
+			
 			$value = $results[$element_id][sanitize_title_with_dashes( remove_accents( $details['title'] ) )];
-			$display_value = '<pre>'.htmlspecialchars( $results[$element_id][sanitize_title_with_dashes( remove_accents( $details['title'] ) )] ) . '</pre>';
+			
+			/* for the upload field display it differently */
+			if( $details['type'] == 'upload' && !empty ( $value ) && is_numeric( $value ) ){				
+				$file_src = wp_get_attachment_url($value);
+				$thumbnail = wp_get_attachment_image( $value, array( 80, 60 ), true );
+				$file_name = get_the_title( $value );
+				
+				if ( preg_match( '/^.*?\.(\w+)$/', get_attached_file( $value ), $matches ) )
+					$file_type = esc_html( strtoupper( $matches[1] ) );
+				else
+					$file_type = strtoupper( str_replace( 'image/', '', get_post_mime_type( $value ) ) );
+				
+				$display_value = '<div class="upload-field-details">'. $thumbnail .'<p><span class="file-name">'. $file_name .'</span><span class="file-type">'. $file_type . '</span></p></div>';
+			}
+			else{				
+				
+				$display_value = '<pre>'.htmlspecialchars( $value ) . '</pre>';
+			}
 			
 			$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $element_id, $value );		
 			
@@ -458,6 +502,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 				wp_enqueue_script( 'jquery-ui-draggable' );
 				wp_enqueue_script( 'jquery-ui-droppable' );
 				wp_enqueue_script( 'jquery-ui-sortable' );
+				wp_enqueue_script( 'thickbox' );
+				wp_enqueue_style( 'thickbox' );
 				wp_enqueue_script('wordpress-creation-kit', plugins_url('/wordpress-creation-kit.js', __FILE__), array('jquery', 'jquery-ui-draggable', 'jquery-ui-droppable', 'jquery-ui-sortable' ) );
 				wp_register_style('wordpress-creation-kit-css', plugins_url('/wordpress-creation-kit.css', __FILE__));
 				wp_enqueue_style('wordpress-creation-kit-css');	
@@ -724,60 +770,62 @@ class WCK_CFC_Wordpress_Creation_Kit{
 
 	/* modify Insert into post button */	
 	function wck_media_upload_popup_head()
-	{
-		if( ( isset( $_GET["mb_type"] ) ) )
-		{
-			?>
-			<style type="text/css">
-				#media-upload-header #sidemenu li#tab-type_url,
-				#media-upload-header #sidemenu li#tab-gallery {
-					display: none;
-				}
-				
-				#media-items tr.url,
-				#media-items tr.align,
-				#media-items tr.image_alt,
-				#media-items tr.image-size,
-				#media-items tr.post_excerpt,
-				#media-items tr.post_content,
-				#media-items tr.image_alt p,
-				#media-items table thead input.button,
-				#media-items table thead img.imgedit-wait-spin,
-				#media-items tr.submit a.wp-post-thumbnail {
-					display: none;
-				} 
-
-				.media-item table thead img {
-					border: #DFDFDF solid 1px; 
-					margin-right: 10px;
-				}
-
-			</style>
-			<script type="text/javascript">
-			(function($){
-			
-				$(document).ready(function(){
-				
-					$('#media-items').bind('DOMNodeInserted',function(){
-						$('input[value="Insert into Post"]').each(function(){
-							$(this).attr('value','<?php _e("Select File")?>');
-						});
-					}).trigger('DOMNodeInserted');
+	{	
+		if( $this->args['meta_name'] == $_GET["meta_name"] ){			
+			if( ( isset( $_GET["mb_type"] ) ) ){
+				?>
+				<style type="text/css">
+					#media-upload-header #sidemenu li#tab-type_url,
+					#media-upload-header #sidemenu li#tab-gallery {
+						display: none;
+					}
 					
-					$('form#filter').each(function(){
+					#media-items tr.url,
+					#media-items tr.align,
+					#media-items tr.image_alt,
+					#media-items tr.image-size,
+					#media-items tr.post_excerpt,
+					#media-items tr.post_content,
+					#media-items tr.image_alt p,
+					#media-items table thead input.button,
+					#media-items table thead img.imgedit-wait-spin,
+					#media-items tr.submit a.wp-post-thumbnail {
+						display: none;
+					} 
+
+					.media-item table thead img {
+						border: #DFDFDF solid 1px; 
+						margin-right: 10px;
+					}
+
+				</style>
+				<script type="text/javascript">
+				(function($){
+				
+					$(document).ready(function(){
+					
+						$('#media-items').bind('DOMNodeInserted',function(){
+							$('input[value="Insert into Post"]').each(function(){
+								$(this).attr('value','<?php _e("Select File")?>');
+							});
+						}).trigger('DOMNodeInserted');
 						
-						$(this).append('<input type="hidden" name="mb_type" value="<?php echo $_GET['mb_type']; ?>" />');
-						
-					});
-				});
+						$('form#filter').each(function(){
 							
-			})(jQuery);
-			</script>
-			<?php
+							$(this).append('<input type="hidden" name="mb_type" value="<?php echo $_GET['mb_type']; ?>" />');
+							$(this).append('<input type="hidden" name="mb_info_div" value="<?php echo $_GET['mb_info_div']; ?>" />');
+							
+						});
+					});
+								
+				})(jQuery);
+				</script>
+				<?php
+			}
 		}
 	}
 
-	/* custom functionality for upload video */
+	/* custom functionality for upload button */
 
 	function wck_media_send_to_editor($html, $id)
 	{
@@ -786,12 +834,19 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		if(isset($arr_postinfo["mb_type"]))
 		{
 			$file_src = wp_get_attachment_url($id);
+			$thumbnail = wp_get_attachment_image( $id, array( 80, 60 ), true );
+			$file_name = get_the_title( $id );
+			
+			if ( preg_match( '/^.*?\.(\w+)$/', get_attached_file( $id ), $matches ) )
+				$file_type = esc_html( strtoupper( $matches[1] ) );
+			else
+				$file_type = strtoupper( str_replace( 'image/', '', get_post_mime_type( $id ) ) );
 		
 			?>
 			<script type="text/javascript">				
 				
-				self.parent.window. <?php echo $arr_postinfo["mb_type"];?> .val('<?php echo $file_src; ?>');
-				
+				self.parent.window. <?php echo $arr_postinfo["mb_type"];?> .val('<?php echo $id; ?>');
+				self.parent.window. <?php echo $arr_postinfo["mb_info_div"];?> .html('<?php echo $thumbnail ?><p><span class="file-name"><?php echo $file_name; ?></span><span class="file-type"><?php echo $file_type; ?></span></p>');			
 				self.parent.tb_remove();
 				
 			</script>

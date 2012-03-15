@@ -64,7 +64,12 @@ function addMeta(value, id, nonce){
 							jQuery(this).removeAttr( 'checked' );	
 						else
 							jQuery(this).val('');					
-					});				
+					});	
+
+					jQuery('#'+value+' .upload-field-details').each(function(){
+						jQuery(this).html('<p><span class="file-name"></span><span class="file-type"></span></p>');	
+					});	
+					
 					jQuery('#'+value).parent().css('opacity','1');	
 					
 					/* Remove form if is single */
