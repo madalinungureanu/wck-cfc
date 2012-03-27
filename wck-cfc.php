@@ -253,6 +253,9 @@ function wck_cfc_create_boxes(){
 		$wck_cfc_fields = get_post_meta( $meta_box->ID, 'wck_cfc_fields', true );
 		
 		$box_title = get_the_title( $meta_box->ID );
+		/* treat case where the post has no title */
+		if( empty( $box_title ) )
+			$box_title = '(no title)';
 		
 		$fields_array = array();
 		if( !empty( $wck_cfc_fields ) ){

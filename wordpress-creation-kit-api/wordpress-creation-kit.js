@@ -1,9 +1,6 @@
 /* Add width to elements at startup */
 jQuery(function(){
-	jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });
-	
-	
-	
+	jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });	
 });
 
 /* add reccord to the meta */

@@ -197,11 +197,11 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		$element .= '<div class="mb-right-column">';
 		
 		if($details['type'] == 'text'){
-			$element .= '<input type="text" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" value="'. $value .'" class="mb-text-input mb-field"/>';
+			$element .= '<input type="text" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" value="'. esc_attr( $value ) .'" class="mb-text-input mb-field"/>';
 		} 
 		
 		if($details['type'] == 'textarea'){
-			$element .= '<textarea name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" style="vertical-align:top;" class="mb-textarea mb-field">'. $value .'</textarea>';
+			$element .= '<textarea name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" style="vertical-align:top;" class="mb-textarea mb-field">'. esc_html( $value ) .'</textarea>';
 		}
 		
 		if($details['type'] == 'select'){
@@ -212,7 +212,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 			
 			if( !empty( $details['options'] ) ){
 					foreach( $details['options'] as $option ){
-						$element .= '<option value="'. $option .'"  '. selected( $option, $value, false ) .' >'. $option .'</option>';
+						$element .= '<option value="'. esc_attr( $option ) .'"  '. selected( $option, $value, false ) .' >'. esc_html( $option ) .'</option>';
 					}
 			}				
 				
@@ -227,7 +227,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 						
 						if ( strpos($value, $option) !== false ) 
 							$found = true;
-						$element .= '<div><input type="checkbox" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. $option .'"  '. checked( $found, true, false ) .'class="mb-checkbox mb-field" /><label for="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' .$option ) ) ) .'">'. $option .'</label></div>' ;
+						$element .= '<div><input type="checkbox" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. esc_attr( $option ) .'"  '. checked( $found, true, false ) .'class="mb-checkbox mb-field" /><label for="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' .$option ) ) ) .'">'. esc_html( $option ) .'</label></div>' ;
 					}
 			}
 			
@@ -236,13 +236,13 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		if($details['type'] == 'radio'){
 			
 			if( !empty( $details['options'] ) ){
-					foreach( $details['options'] as $option ){
-						$found = false;
-						
-						if ( strpos($value, $option) !== false ) 
-							$found = true;
-						$element .= '<div><input type="radio" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. $option .'"  '. checked( $found, true, false ) .'class="mb-radio mb-field" /><label for="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' .$option ) ) ) .'">'. $option .'</label></div>';
-					}
+				foreach( $details['options'] as $option ){
+					$found = false;
+					
+					if ( strpos($value, $option) !== false ) 
+						$found = true;
+					$element .= '<div><input type="radio" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. esc_attr( $option ) .'"  '. checked( $found, true, false ) .'class="mb-radio mb-field" /><label for="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' .$option ) ) ) .'">'. esc_html( $option ) .'</label></div>';
+				}
 			}
 			
 		}		
@@ -418,7 +418,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		
 		if($results != null){
-			$list .= '<thead><tr><th class="wck-number">#</th><th>Content</th><th class="wck-edit">Edit</th><th class="wck-delete">Delete</th></tr></thead>';
+			$list .= '<thead><tr><th class="wck-number">#</th><th class="wck-content">Content</th><th class="wck-edit">Edit</th><th class="wck-delete">Delete</th></tr></thead>';
 			$i=0;
 			foreach ($results as $result){			
 				
@@ -439,7 +439,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		$list = '';
 		$list .= '<tr id="element_'.$element_id.'">'; 
 		$list .= '<td style="text-align:center;vertical-align:middle;" class="wck-number">'. $entry_nr .'</td>'; 
-		$list .= '<td><ul>';
+		$list .= '<td class="wck-content"><ul>';
 		
 		$j = 0;				
 		
