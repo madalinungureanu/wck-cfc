@@ -155,7 +155,8 @@ function wck_cfc_create_box(){
 		array( 'type' => 'textarea', 'title' => 'Description', 'description' => 'The description of the field.' ),				
 		array( 'type' => 'select', 'title' => 'Required', 'options' => array( 'false', 'true' ), 'default' => 'false', 'description' => 'Whether the field is required or not' ),
 		array( 'type' => 'text', 'title' => 'Default Value', 'description' => 'Default value of the field. For Checkboxes if there are multiple values separete them with a ","' ),
-		array( 'type' => 'text', 'title' => 'Options', 'description' => 'Options for field types "select", "checkbox" and "radio". For multiple options separete them with a ","' )
+		array( 'type' => 'text', 'title' => 'Options', 'description' => 'Options for field types "select", "checkbox" and "radio". For multiple options separete them with a ","' ),
+		array( 'type' => 'radio', 'title' => 'Attach upload to post', 'description' => 'Whether or not the uploads should be attached to the post', 'options' => array( 'yes', 'no' ) )
 	);	
 	
 	
@@ -200,6 +201,21 @@ function wck_cfc_update_form_option_wrapper_end( $form, $i, $value ){
 	return $form;
 }
 
+/* attach to post show or hide based on field typr */
+add_filter( "wck_before_update_form_wck_cfc_fields_element_6", 'wck_cfc_update_form_attach_wrapper_start', 10, 3 );
+function wck_cfc_update_form_attach_wrapper_start( $form, $i, $value ){
+	if( $GLOBALS['wck_cfc_update_field_type'] != 'upload' )
+		$form .= '<div class="hide-attach" style="display:none;">';
+	return $form;
+}
+
+add_filter( "wck_after_update_form_wck_cfc_fields_element_6", 'wck_cfc_update_form_attach_wrapper_end', 10, 3 );
+function wck_cfc_update_form_attach_wrapper_end( $form, $i, $value ){
+	if( $GLOBALS['wck_cfc_update_field_type'] != 'upload' )
+		$form .= '</div>';
+	return $form;
+}
+
 
 /* display or show options based on the field type */
 add_filter( "wck_before_listed_wck_cfc_fields_element_1", 'wck_cfc_display_label_wrapper_start', 10, 3 );
@@ -218,6 +234,21 @@ function wck_cfc_display_label_wrapper_options_start( $form, $i, $value ){
 add_filter( "wck_after_listed_wck_cfc_fields_element_5", 'wck_cfc_display_label_wrapper_options_end', 10, 3 );
 function wck_cfc_display_label_wrapper_options_end( $form, $i, $value ){
 	if( !in_array( $GLOBALS['wck_cfc_field_type'], array( 'select', 'checkbox', 'radio' ) ) )
+		$form .= '</div>';
+	return $form;
+}
+
+/* Show or hide attach field in list view */
+add_filter( "wck_before_listed_wck_cfc_fields_element_6", 'wck_cfc_display_label_wrapper_attach_start', 10, 3 );
+function wck_cfc_display_label_wrapper_attach_start( $form, $i, $value ){
+	if( $GLOBALS['wck_cfc_field_type'] != 'upload' )
+		$form .= '<div style="display:none;">';
+	return $form;
+}
+
+add_filter( "wck_after_listed_wck_cfc_fields_element_6", 'wck_cfc_display_label_wrapper_attach_end', 10, 3 );
+function wck_cfc_display_label_wrapper_attach_end( $form, $i, $value ){
+	if( $GLOBALS['wck_cfc_field_type'] != 'upload' )
 		$form .= '</div>';
 	return $form;
 }
@@ -269,6 +300,8 @@ function wck_cfc_create_boxes(){
 					$fields_inner_array['default'] = $wck_cfc_field['default-value'];
 				if( !empty( $wck_cfc_field['options'] ) )
 					$fields_inner_array['options'] = explode( ',', $wck_cfc_field['options'] );
+				if( !empty( $wck_cfc_field['attach-upload-to-post'] ) )
+					$fields_inner_array['attach_to_post'] = $wck_cfc_field['attach-upload-to-post'] == 'yes' ? true : false;
 					
 				$fields_array[] = $fields_inner_array;
 			}

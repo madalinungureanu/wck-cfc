@@ -1,4 +1,4 @@
-#wck_cfc_fields .row-options{
+#wck_cfc_fields .row-options, #wck_cfc_fields .row-attach-upload-to-post{
 	display:none;
 }
 
