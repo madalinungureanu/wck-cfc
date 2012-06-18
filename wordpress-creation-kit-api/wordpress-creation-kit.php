@@ -112,8 +112,11 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		global $wck_pages_hooknames;
 		
 		if( $this->args['context'] == 'post_meta' ){
-			if( $this->args['post_id'] == '' && $this->args['page_template'] == '' )
+			if( $this->args['post_id'] == '' && $this->args['page_template'] == '' ){
 				add_meta_box($this->args['metabox_id'], $this->args['metabox_title'], array( &$this, 'wck_content' ), $this->args['post_type'], 'normal', 'low',  array( 'meta_name' => $this->args['meta_name'], 'meta_array' => $this->args['meta_array']) );
+				/* add class to meta box */
+				add_filter( "postbox_classes_".$this->args['post_type']."_".$this->args['metabox_id'], array( &$this, 'wck_add_metabox_classes' ) );
+			}
 			else{
 				$post_id = $_GET['post'] ? $_GET['post'] : $_POST['post_ID'] ;
 				
@@ -121,6 +124,9 @@ class WCK_CFC_Wordpress_Creation_Kit{
 					$template_file = get_post_meta($post_id,'_wp_page_template',TRUE);				
 					if( $this->args['post_id'] == $post_id && $template_file == $this->args['page_template'] )
 						add_meta_box($this->args['metabox_id'], $this->args['metabox_title'], array( &$this, 'wck_content' ), 'page', 'normal', 'low',  array( 'meta_name' => $this->args['meta_name'], 'meta_array' => $this->args['meta_array'] ) );
+						
+					/* add class to meta box */
+					add_filter( "postbox_classes_page_".$this->args['metabox_id'], array( &$this, 'wck_add_metabox_classes' ) );
 				}
 				else{
 				
@@ -128,13 +134,18 @@ class WCK_CFC_Wordpress_Creation_Kit{
 						if( $this->args['post_id'] == $post_id ){
 							$post_type = get_post_type( $post_id );
 							add_meta_box($this->args['metabox_id'], $this->args['metabox_title'], array( &$this, 'wck_content' ), $post_type, 'normal', 'low',  array( 'meta_name' => $this->args['meta_name'], 'meta_array' => $this->args['meta_array'] ) );
+							/* add class to meta box */
+							add_filter( "postbox_classes_".$post_type."_".$this->args['metabox_id'], array( &$this, 'wck_add_metabox_classes' ) );
 						}
 					}
 					
 					if(  $this->args['page_template'] != '' ){
 						$template_file = get_post_meta($post_id,'_wp_page_template',TRUE);	
-						if ( $template_file == $this->args['page_template'] )
+						if ( $template_file == $this->args['page_template'] ){
 							add_meta_box($this->args['metabox_id'], $this->args['metabox_title'], array( &$this, 'wck_content' ), 'page', 'normal', 'low',  array( 'meta_name' => $this->args['meta_name'], 'meta_array' => $this->args['meta_array']) );
+							/* add class to meta box */
+							add_filter( "postbox_classes_page_".$this->args['metabox_id'], array( &$this, 'wck_add_metabox_classes' ) );
+						}
 					}			
 					
 				}			
@@ -143,8 +154,16 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		}
 		else if( $this->args['context'] == 'option' ){			
 			add_meta_box($this->args['metabox_id'], $this->args['metabox_title'], array( &$this, 'wck_content' ), $wck_pages_hooknames[$this->args['post_type']], 'normal', 'low',  array( 'meta_name' => $this->args['meta_name'], 'meta_array' => $this->args['meta_array']) );
+			/* add class to meta box */
+			add_filter( "postbox_classes_".$wck_pages_hooknames[$this->args['post_type']]."_".$this->args['metabox_id'], array( &$this, 'wck_add_metabox_classes' ) );
 		}
 	}	
+	
+	/* Function used to add classes to the wck meta boxes */
+	function wck_add_metabox_classes( $classes ){
+		array_push($classes,'wck-post-box');
+		return $classes;
+	}
 
 	function wck_content($post, $metabox){		
 		//output the add form 
@@ -221,13 +240,15 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		
 		if($details['type'] == 'checkbox'){
 			
-			if( !empty( $details['options'] ) ){
+			if( !empty( $details['options'] ) ){					
 					foreach( $details['options'] as $option ){
-						$found = false;
+						$found = false;						
 						
-						if ( strpos($value, $option) !== false ) 
+						$values = explode( ', ', $value );						
+						if ( in_array( $option, $values ) ) 
 							$found = true;
-						$element .= '<div><input type="checkbox" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. esc_attr( $option ) .'"  '. checked( $found, true, false ) .'class="mb-checkbox mb-field" /><label for="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' .$option ) ) ) .'">'. esc_html( $option ) .'</label></div>' ;
+							
+						$element .= '<div><label><input type="checkbox" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. esc_attr( $option ) .'"  '. checked( $found, true, false ) .'class="mb-checkbox mb-field" />'. esc_html( $option ) .'</label></div>' ;
 					}
 			}
 			
@@ -239,9 +260,11 @@ class WCK_CFC_Wordpress_Creation_Kit{
 				foreach( $details['options'] as $option ){
 					$found = false;
 					
-					if ( strpos($value, $option) !== false ) 
+					$values = explode( ', ', $value );						
+					if ( in_array( $option, $values ) ) 
 						$found = true;
-					$element .= '<div><input type="radio" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. esc_attr( $option ) .'"  '. checked( $found, true, false ) .'class="mb-radio mb-field" /><label for="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' .$option ) ) ) .'">'. esc_html( $option ) .'</label></div>';
+							
+					$element .= '<div><label><input type="radio" name="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'" id="'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] . '_' . $option ) ) ) .'" value="'. esc_attr( $option ) .'"  '. checked( $found, true, false ) .'class="mb-radio mb-field" />'. esc_html( $option ) .'</label></div>';
 				}
 			}
 			
@@ -267,8 +290,10 @@ class WCK_CFC_Wordpress_Creation_Kit{
 				else
 					$file_type = strtoupper( str_replace( 'image/', '', get_post_mime_type( $value ) ) );
 			}
-			$element .= '<div id="'. esc_attr( $upload_info_div_id ) .'" class="upload-field-details">'. $thumbnail .'<p><span class="file-name">'. $file_name .'</span><span class="file-type">'. $file_type . '</span></p></div>';
-			
+			$element .= '<div id="'. esc_attr( $upload_info_div_id ) .'" class="upload-field-details">'. $thumbnail .'<p><span class="file-name">'. $file_name .'</span><span class="file-type">'. $file_type . '</span>';
+			if( !empty ( $value ) )
+				$element .= '<span class="wck-remove-upload">'.__( 'Remove', 'wck' ).'</span>';
+			$element .= '</p></div>';
 			/* the upload link. we send through get the hidden input id, details div id and meta name */
 			if( $details['attach_to_post'] )
 				$attach_to_post = 'post_id='. get_the_id() .'&amp;';
@@ -414,7 +439,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 		if( $this->args['single'] ) $list .= ' single';
 		if( !$this->args['sortable'] ) $list .= ' not-sortable';
 		
-		$list .= '" post="'.esc_attr($id).'">';		
+		$list .= '" post="'.esc_attr($id).'" onload="alert(\'aaaaaaaaa\')">';		
 		
 		
 		if($results != null){
@@ -468,7 +493,7 @@ class WCK_CFC_Wordpress_Creation_Kit{
 			
 			$list = apply_filters( "wck_before_listed_{$meta}_element_{$j}", $list, $element_id, $value );		
 			
-			$list .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'"><strong>'.$details['title'].': </strong>'.$display_value.' </li>';							
+			$list .= '<li class="row-'. esc_attr( sanitize_title_with_dashes( remove_accents( $details['title'] ) ) ) .'"><strong>'.$details['title'].': </strong>'.$display_value.' </li>';		
 			
 			$list = apply_filters( "wck_after_listed_{$meta}_element_{$j}", $list, $element_id, $value );
 			
@@ -846,7 +871,8 @@ class WCK_CFC_Wordpress_Creation_Kit{
 			<script type="text/javascript">				
 				
 				self.parent.window. <?php echo $arr_postinfo["mb_type"];?> .val('<?php echo $id; ?>');
-				self.parent.window. <?php echo $arr_postinfo["mb_info_div"];?> .html('<?php echo $thumbnail ?><p><span class="file-name"><?php echo $file_name; ?></span><span class="file-type"><?php echo $file_type; ?></span></p>');			
+				self.parent.window. <?php echo $arr_postinfo["mb_info_div"];?> .html('<?php echo $thumbnail ?><p><span class="file-name"><?php echo $file_name; ?></span><span class="file-type"><?php echo $file_type; ?></span><span class="wck-remove-upload"><?php _e( 'Remove', 'wck' )?></span></p>');
+				
 				self.parent.tb_remove();
 				
 			</script>

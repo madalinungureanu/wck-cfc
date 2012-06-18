@@ -1,3 +1,9 @@
+.wck-post-box{
+	visibility:hidden;
+	height:0;
+	overflow:auto;
+}
+
 .mb-list-entry-fields li{
 	margin-bottom:15px;
 	clear:both;
@@ -9,7 +15,7 @@
 }
 
 .field-label{
-	width:190px;
+	/* width:190px; */
 	float:left;
 	min-height:30px;
 	font-weight:bold;
@@ -26,7 +32,11 @@
 }
 
 .mb-right-column label{
-	padding:0 6px 0 3px;
+	padding:0 6px 0 0;
+}
+
+.mb-right-column input[type="checkbox"], .mb-right-column input[type="radio"]{
+	margin-right:3px;
 }
 
 #mb-ajax-loading{
@@ -49,6 +59,7 @@
     word-wrap: break-word;
 }
 
+
 .wck-edit, .wck-delete, .wck-number{
 	width:50px;
 	text-align:center !important;
@@ -70,12 +81,13 @@ td.wck-number{
 	padding:3px 15px;
 }
 
-.mbdelete{
+.mbdelete, .wck-remove-upload{
 	color:#BC0B0B;
+	cursor:pointer;
 }
 
-.mbdelete:hover{
-	color:#FF0000;
+.mbdelete:hover, .wck-remove-upload:hover{
+	color:#FF0000;	
 }
 
 .mb-list-entry-fields{
@@ -128,8 +140,12 @@ td.wck-number{
 .upload-field-details{
 	display:inline-block;
 	vertical-align:middle;
-	margin-right:10px;
 	min-height:24px;
+	padding:2px 0;
+}
+
+.upload-field-details p{
+	margin:2px 0 0;
 }
 
 .upload-field-details img{

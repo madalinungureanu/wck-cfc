@@ -298,8 +298,14 @@ function wck_cfc_create_boxes(){
 					$fields_inner_array['required'] = $wck_cfc_field['required'] == 'false' ? false : true;
 				if( !empty( $wck_cfc_field['default-value'] ) )
 					$fields_inner_array['default'] = $wck_cfc_field['default-value'];
-				if( !empty( $wck_cfc_field['options'] ) )
+				if( !empty( $wck_cfc_field['options'] ) ){
 					$fields_inner_array['options'] = explode( ',', $wck_cfc_field['options'] );
+					
+					foreach( $fields_inner_array['options'] as  $key => $value ){
+						$fields_inner_array['options'][$key] = trim( $value );
+					}					
+					
+				}
 				if( !empty( $wck_cfc_field['attach-upload-to-post'] ) )
 					$fields_inner_array['attach_to_post'] = $wck_cfc_field['attach-upload-to-post'] == 'yes' ? true : false;
 					
@@ -309,8 +315,14 @@ function wck_cfc_create_boxes(){
 		
 		if( !empty( $wck_cfc_args ) ){
 			foreach( $wck_cfc_args as $wck_cfc_arg ){
+			
+				/* metabox_id must be different from meta_name */
+				$metabox_id = sanitize_title_with_dashes( remove_accents ( $box_title ) );				
+				if( $wck_cfc_arg['meta-name'] == $metabox_id )
+					$metabox_id = 'wck-'. $metabox_id;
+				
 				$box_args = array(
-								'metabox_id' => sanitize_title_with_dashes( remove_accents ( $box_title ) ),
+								'metabox_id' => $metabox_id,
 								'metabox_title' => $box_title,
 								'post_type' => $wck_cfc_arg['post-type'],
 								'meta_name' => $wck_cfc_arg['meta-name'],

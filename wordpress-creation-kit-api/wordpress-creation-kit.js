@@ -3,6 +3,23 @@ jQuery(function(){
 	jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });	
 });
 
+/* Add width to labels if the post box is closed at load */
+jQuery(function(){
+
+	/* Callback version  */
+	/* postboxes.pbshow = function(box){		
+		jQuery('strong, .field-label',  jQuery('#'+box)).css( 'width', 'auto' );		
+	} */
+	
+	jQuery( '.wck-post-box .hndle' ).click( function(){		
+		jQuery('strong, .field-label',  jQuery(this).parent() ).css( 'width', 'auto' );		
+	})
+	
+});
+
+
+
+
 /* add reccord to the meta */
 function addMeta(value, id, nonce){
 	jQuery('#'+value).parent().css({'opacity':'0.4', 'position':'relative'}).append('<div id="mb-ajax-loading"></div>');
@@ -50,6 +67,9 @@ function addMeta(value, id, nonce){
 				jQuery.post( ajaxurl ,  { action:"wck_refresh_list"+value, meta:value, id:id}, function(response) {					
 					
 					jQuery('#container_'+value).replaceWith(response);
+					
+					/* set width of strong label */
+					wck_set_to_widest('strong', '#container_'+value );
 					
 					jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });
 					
@@ -101,6 +121,9 @@ function removeMeta(value, id, element_id, nonce){
 				jQuery.post( ajaxurl ,  { action:"wck_refresh_list"+value, meta:value, id:id}, function(response) {	
 					jQuery('#container_'+value).replaceWith(response);
 					
+					/* set width of strong label */
+					wck_set_to_widest('strong', '#container_'+value );
+					
 					jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });
 					
 					mb_sortable_elements();
@@ -147,6 +170,9 @@ function mb_sortable_elements() {
 					jQuery.post( ajaxurl ,  { action:"wck_refresh_list"+value, meta:value, id:id}, function(response) {
 							jQuery('#container_'+value).replaceWith(response);
 							
+							/* set width of strong label */
+							wck_set_to_widest('strong', '#container_'+value );
+							
 							jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });
 							
 							mb_sortable_elements();
@@ -178,6 +204,10 @@ function showUpdateFormMeta(value, id, element_id, nonce){
 		jQuery.post( ajaxurl ,  { action:"wck_show_update"+value, meta:value, id:id, element_id:element_id, _ajax_nonce:nonce}, function(response) {	
 				//jQuery('#container_'+value+' #element_'+element_id).append(response);
 				jQuery(response).insertAfter('#container_'+value+' #element_'+element_id);
+				
+				/* set width of field-label */
+				wck_set_to_widest('.field-label', '#update_container_' + value + '_' + element_id );
+				
 				jQuery('#container_'+value).parent().css('opacity','1');
 				jQuery('#mb-ajax-loading').remove();
 				wckGoToByScroll('update_container_' + value + '_' + element_id);
@@ -235,6 +265,9 @@ function updateMeta(value, id, element_id, nonce){
 				jQuery.post( ajaxurl ,  { action:"wck_refresh_entry"+value, meta:value, id:id, element_id:element_id}, function(response) {	
 					jQuery('#container_'+value+' #element_'+element_id).replaceWith(response);
 					
+					/* set width of strong label */
+					wck_set_to_widest('strong', '#container_'+value+' #element_'+element_id );
+					
 					jQuery('.mb-table-container tbody td').css('width', function(){ return jQuery(this).width() });
 					
 					jQuery( '#container_' + value + " tbody" ).sortable("enable");
@@ -257,3 +290,44 @@ function wckSyncTranslation(id){
 function wckGoToByScroll(id){
      	jQuery('html,body').animate({scrollTop: jQuery("#"+id).offset().top - 28},'slow');
 }
+
+/* Remove uploaded file */
+jQuery(function(){
+	jQuery('.wck-remove-upload').live('click', function(e){		
+		jQuery(this).parent().parent().parent().children('.mb-field').val("");
+		jQuery(this).parent().parent('.upload-field-details').html('<p><span class="file-name"></span><span class="file-type"></span></p>');
+	});	
+});
+
+/* Set width for listing "label" equal to the widest */
+jQuery( function(){	
+	jQuery('.mb-table-container').each(function(){
+		wck_set_to_widest( 'strong', jQuery(this) );		
+	});	
+	
+	jQuery('.mb-list-entry-fields').each(function(){
+		wck_set_to_widest( '.field-label', jQuery(this) );		
+	});	
+	
+	jQuery('.wck-post-box').css( {visibility: 'visible', height: 'auto'} );
+});
+
+function wck_set_to_widest( element, parent ){
+	if( jQuery( element, parent).length != 0 ){		
+		var widest = null;
+		jQuery( element, parent).each(function() {
+		  if (widest == null)
+			widest = jQuery(this);
+		  else
+		  if ( jQuery(this).width() > widest.width() )
+			widest = jQuery(this);
+		});
+		
+		jQuery(element, parent).css( {display: 'inline-block', width: widest.width(), paddingRight: '5px'} );
+	}
+	else return;
+}
+
+/* jQuery('.mb-table-container').ready(function(){		
+		jQuery('.mb-table-container strong').css( {display: 'inline-block', width: 200, paddingRight: '5px'} );	
+}); */

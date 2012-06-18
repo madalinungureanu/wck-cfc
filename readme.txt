@@ -4,7 +4,7 @@ Contributors: reflectionmedia, madalin.ungureanu
 Donate link: http://www.cozmoslabs.com/wordpress-creation-kit/custom-fields-creator/
 Tags: custom field, custom fields, custom fields creator, meta box, meta boxes, repeater fields, post meta, repeater
 Requires at least: 3.1
-Tested up to: 3.3.1
+Tested up to: 3.4
 Stable tag: 1.0.2
 
 WCK Custom Fields Creator - easily create custom meta boxes for WordPress. It supports normal custom fields and custom fields repeater groups.
@@ -81,6 +81,16 @@ This is true even for single entries.
 4. Some defined custom fields
 
 == Changelog ==
+
+= 1.0.2 =
+* Major changes to the upload field. Now it stores the attachments ID instead of the url of the file. IMPORTANT: in the backend backwards compatibility has been taken care of but on the frontend the responsibility is yours.
+* Added possibility to choose whether to attach or not the upload to the post.
+* Various UI improvements.
+* Fixed bug when CFC box had no title.
+* Fixed label bug on edit form.
+* Fixed bug that broke sorting after updating an element.
+* Other small bug fixes and improvements.
+
 
 = 1.0.1 =
 * Added link to website and documentation in readme.
